@@ -10,7 +10,7 @@ import { useNavigate } from 'react-router'
 import { TailSpin } from 'react-loader-spinner'
 import styled from 'styled-components'
 import SignSchema from '../utils/SignSchema'
-import Popup from './common/PopUp'
+import { showPopup } from '../store/popup.store'
 
 type FormData = z.infer<typeof SignSchema>
 
@@ -43,7 +43,8 @@ function Sign() {
     const user = await signUser(data.email, data.password)
     console.log(user)
     if (user) {
-      // navigate('/sign-in')
+      navigate('/sign-in')
+      showPopup('Account successfully created')
     }
   }
 

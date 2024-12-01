@@ -1,33 +1,27 @@
-import React, { useState, useRef } from 'react'
+import React, { useRef } from 'react'
 import styled, { keyframes } from 'styled-components'
+import { $popupState, hidePopup } from '../../store/popup.store'
+import { useUnit } from 'effector-react'
 
-interface PopupProps {
-  message: string
-}
-
-const Popup: React.FC<PopupProps> = ({ message }) => {
-  const [isOpen, setIsOpen] = useState(true)
+const Popup = () => {
+  const store = useUnit($popupState)
   const popupRef = useRef<HTMLDivElement>(null)
-  const closePopup = () => setIsOpen(false)
 
   const handleOutsideClick = (e: React.MouseEvent) => {
     if (popupRef.current && !popupRef.current.contains(e.target as Node)) {
-      closePopup()
+      hidePopup()
     }
   }
 
+  if (!store.visible) return null
   return (
     <>
-      {isOpen && (
-        <>
-          <PopupContainer onClick={handleOutsideClick}>
-            <PopupContent ref={popupRef}>
-              <CloseButton onClick={closePopup}>&times;</CloseButton>
-              <p>{message}</p>
-            </PopupContent>
-          </PopupContainer>
-        </>
-      )}
+      <PopupContainer onClick={handleOutsideClick}>
+        <PopupContent ref={popupRef}>
+          <p>{store.content}</p>
+          <CloseButton onClick={() => hidePopup()}>&times;</CloseButton>
+        </PopupContent>
+      </PopupContainer>
     </>
   )
 }
@@ -61,6 +55,9 @@ const PopupContainer = styled.div`
 
 // Popup Content
 const PopupContent = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   background: rgb(0, 0, 25);
   color: white;
   border-radius: 8px;
@@ -75,9 +72,6 @@ const PopupContent = styled.div`
 
 // Close Button
 const CloseButton = styled.button`
-  position: absolute;
-  top: 10px;
-  right: 10px;
   background: none;
   border: none;
   font-size: 2rem;
