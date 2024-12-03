@@ -7,9 +7,9 @@ import { signInWithEmailAndPassword } from 'firebase/auth'
 import { auth } from '../firebase'
 import { useNavigate } from 'react-router'
 import { TailSpin } from 'react-loader-spinner'
+import { showPopup } from '../store/popup.store'
 import styled from 'styled-components'
 import LoginSchema from '../utils/LoginSchema'
-import { showPopup } from '../store/popup.store'
 
 type FormData = z.infer<typeof LoginSchema>
 
@@ -24,10 +24,12 @@ function Login() {
   const navigate = useNavigate()
   const [buttonDisabled, setButtonDisabled] = useState<boolean>(true)
   const [loading, setLoading] = useState<boolean>(false)
+  const [customError, setCustomError] = useState<string>('')
 
   useEffect(() => {
     const email = watch('email').length
     const password = watch('password').length
+    setCustomError('')
 
     if (email && password) {
       setButtonDisabled(false)
@@ -37,9 +39,7 @@ function Login() {
   }, [watch('email'), watch('password')])
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
-    console.log('handle sign')
     const user = await LoginUser(data.email, data.password)
-    console.log(user)
     if (user) {
       navigate('/notes')
       showPopup('Logged in successfully')
@@ -53,18 +53,24 @@ function Login() {
       const user = userCredential.user
 
       setLoading(false)
+      console.log(userCredential)
       return user
     } catch (error: any) {
-      if (error.code === 'auth/wrong-password') {
-        setError('password', {
-          type: 'manual',
-          message: 'Wrong password',
-        })
-      } else if (error.code === 'auth/user-not-found') {
+      console.log(error)
+      if (error.code === 'auth/invalid-credential') {
+        setCustomError('Invalid email or passwrod')
         setError('email', {
           type: 'manual',
-          message: 'User with provided email don`t exist',
+          message: ' ',
         })
+        setError('password', {
+          type: 'manual',
+          message: ' ',
+        })
+      } else if (error.code === 'auth/too-many-requests') {
+        setCustomError('To many attempts, try again later ')
+      } else {
+        setCustomError(error.code)
       }
       setLoading(false)
     }
@@ -85,7 +91,6 @@ function Login() {
               type="text"
               {...register('email')}
             />
-            <StyledErrorMessage>{errors.email?.message}</StyledErrorMessage>
           </StyledField>
           <StyledField>
             <StyledLabel>
@@ -97,8 +102,8 @@ function Login() {
               type="password"
               {...register('password')}
             />
-            <StyledErrorMessage>{errors.password?.message}</StyledErrorMessage>
           </StyledField>
+          <StyledErrorMessage>{customError}</StyledErrorMessage>
         </StyledInputsWrapper>
         <StyledField>
           <StyledButton type="submit" disabled={buttonDisabled}>
@@ -111,7 +116,7 @@ function Login() {
 }
 
 const StyledButtonText = styled.p`
-  font-size: 1.5rem;
+  font-size: 1.52rem;
   font-weight: 700;
   text-align: center;
 `

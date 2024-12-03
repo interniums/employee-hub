@@ -56,6 +56,7 @@ function Sign() {
 
       await setDoc(doc(db, 'users', user.uid), {
         email: user.email,
+        avatar: null,
       })
       setLoading(false)
       return user

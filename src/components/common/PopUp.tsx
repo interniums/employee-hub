@@ -18,13 +18,18 @@ const Popup = () => {
     <>
       <PopupContainer onClick={handleOutsideClick}>
         <PopupContent ref={popupRef}>
-          <p>{store.content}</p>
+          <PopupText>{store.content}</PopupText>
           <CloseButton onClick={() => hidePopup()}>&times;</CloseButton>
         </PopupContent>
       </PopupContainer>
     </>
   )
 }
+
+const PopupText = styled.p`
+  font-size: 1rem;
+  font-weight: 700;
+`
 
 // Keyframes for sliding animation
 const slideDown = keyframes`
@@ -56,6 +61,7 @@ const PopupContainer = styled.div`
 // Popup Content
 const PopupContent = styled.div`
   display: flex;
+  font-size: 1rem;
   align-items: center;
   justify-content: space-between;
   background: rgb(0, 0, 25);
